@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DSA Visualizer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #333;
+    }
+
+    .controls {
+      margin: 20px;
+    }
+
+    .controls button {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #barContainer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      height: 400px;
+      margin: 20px;
+      border: 1px solid #ccc;
+      background-color: white;
+    }
+
+    .bar {
+      width: 6px;
+      margin: 0 1px;
+      background-color: teal;
+      transition: height 0.2s ease;
+    }
+
+    .bar.active {
+      background-color: crimson;
+    }
+
+    #size {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>DSA Sort Visualizer</h1>
+  <div class="controls">
+    <label for="size">Array Size:</label>
+    <input type="range" id="size" min="10" max="100" value="50" />
+    <button onclick="generateArray()">Generate New Array</button>
+    <button onclick="mergeSortStart()">Merge Sort</button>
+    <button onclick="quickSortStart()">Quick Sort</button>
+  </div>
+  <div id="barContainer"></div>
+
+  <script>
+    const container = document.getElementById("barContainer");
+    const sizeSlider = document.getElementById("size");
+    let array = [];
+
+    function generateArray() {
+      array = [];
+      container.innerHTML = "";
+      const numBars = parseInt(sizeSlider.value);
+      for (let i = 0; i < numBars; i++) {
+        const height = Math.floor(Math.random() * 350) + 20;
+        array.push(height);
+        const bar = document.createElement("div");
+        bar.classList.add("bar");
+        bar.style.height = `${height}px`;
+        container.appendChild(bar);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function mergeSort(arr, l, r) {
+      if (l >= r) return;
+      const mid = Math.floor((l + r) / 2);
+      await mergeSort(arr, l, mid);
+      await mergeSort(arr, mid + 1, r);
+      await merge(arr, l, mid, r);
+    }
+
+    async function merge(arr, l, mid, r) {
+      const bars = document.getElementsByClassName("bar");
+      let left = arr.slice(l, mid + 1);
+      let right = arr.slice(mid + 1, r + 1);
+      let i = 0, j = 0, k = l;
+
+      while (i < left.length && j < right.length) {
+        bars[k].classList.add("active");
+        await sleep(50);
+        if (left[i] < right[j]) {
+          arr[k] = left[i];
+          bars[k].style.height = `${left[i]}px`;
+          i++;
+        } else {
+          arr[k] = right[j];
+          bars[k].style.height = `${right[j]}px`;
+          j++;
+        }
+        bars[k].classList.remove("active");
+        k++;
+      }
+
+      while (i < left.length) {
+        bars[k].classList.add("active");
+        await sleep(50);
+        arr[k] = left[i];
+        bars[k].style.height = `${left[i]}px`;
+        bars[k].classList.remove("active");
+        i++;
+        k++;
+      }
+
+      while (j < right.length) {
+        bars[k].classList.add("active");
+        await sleep(50);
+        arr[k] = right[j];
+        bars[k].style.height = `${right[j]}px`;
+        bars[k].classList.remove("active");
+        j++;
+        k++;
+      }
+    }
+
+    async function mergeSortStart() {
+      await mergeSort(array, 0, array.length - 1);
+    }
+
+    async function quickSort(arr, low, high) {
+      if (low < high) {
+        let pi = await partition(arr, low, high);
+        await quickSort(arr, low, pi - 1);
+        await quickSort(arr, pi + 1, high);
+      }
+    }
+
+    async function partition(arr, low, high) {
+      const bars = document.getElementsByClassName("bar");
+      let pivot = arr[high];
+      let i = low - 1;
+
+      for (let j = low; j < high; j++) {
+        bars[j].classList.add("active");
+        await sleep(50);
+        if (arr[j] < pivot) {
+          i++;
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+          bars[i].style.height = `${arr[i]}px`;
+          bars[j].style.height = `${arr[j]}px`;
+        }
+        bars[j].classList.remove("active");
+      }
+
+      [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+      bars[i + 1].style.height = `${arr[i + 1]}px`;
+      bars[high].style.height = `${arr[high]}px`;
+
+      return i + 1;
+    }
+
+    async function quickSortStart() {
+      await quickSort(array, 0, array.length - 1);
+    }
+
+    // Initialize
+    generateArray();
+  </script>
+</body>
+</html>
